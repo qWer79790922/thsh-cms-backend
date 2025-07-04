@@ -11,6 +11,8 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 
 INSTALLED_APPS = [
+    'users',
+
     'rest_framework', 
     'corsheaders',
 
@@ -97,3 +99,5 @@ CORS_ALLOW_ALL_ORIGINS = os.getenv("CORS_ALLOW_ALL", "false").lower() == "true"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+AUTH_USER_MODEL = 'users.User'

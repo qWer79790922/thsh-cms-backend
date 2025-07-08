@@ -13,6 +13,7 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 INSTALLED_APPS = [
     'users',
+    'blocks',
 
     'rest_framework', 
     'corsheaders',

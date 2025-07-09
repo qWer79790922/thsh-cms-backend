@@ -126,3 +126,49 @@ class ContentBlockBatchCreateView(APIView):
 
         serialized = ContentBlockSerializer(created_blocks, many=True)
         return Response(serialized.data, status=status.HTTP_201_CREATED)
+
+class ContentBlockBatchUpdateView(APIView):
+    def patch(self, request):
+        section = request.data.get('section')
+        blocks_data = request.data.get('blocks', [])
+        updated_blocks = []
+
+        for block_data in blocks_data:
+            block_id = block_data.get('id')
+            try:
+                block = ContentBlock.objects.get(id=block_id, section=section)
+            except ContentBlock.DoesNotExist:
+                continue  # 忽略不存在的資料
+
+            # 更新主資料
+            for field in ['position', 'is_published']:
+                if field in block_data:
+                    setattr(block, field, block_data[field])
+            block.save()
+
+            # 更新子積木內容
+            if block.block_type == 'title':
+                title = BlockTitle.objects.filter(block=block).first()
+                if title and 'title' in block_data:
+                    for k, v in block_data['title'].items():
+                        setattr(title, k, v)
+                    title.save()
+
+            elif block.block_type == 'text':
+                text = BlockText.objects.filter(block=block).first()
+                if text and 'text' in block_data:
+                    for k, v in block_data['text'].items():
+                        setattr(text, k, v)
+                    text.save()
+
+            elif block.block_type == 'image':
+                image = BlockImage.objects.filter(block=block).first()
+                if image and 'image' in block_data:
+                    for k, v in block_data['image'].items():
+                        setattr(image, k, v)
+                    image.save()
+
+            updated_blocks.append(block)
+
+        serializer = ContentBlockSerializer(updated_blocks, many=True)
+        return Response(serializer.data)

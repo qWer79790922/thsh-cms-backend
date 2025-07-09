@@ -4,6 +4,7 @@ from .views import (
     ContentBlockCreateView,
     ContentBlockUpdateView,
     ContentBlockBatchCreateView,
+    ContentBlockBatchUpdateView,
 )
 
 urlpatterns = [
@@ -11,4 +12,5 @@ urlpatterns = [
     path('create/', ContentBlockCreateView.as_view(), name='content-block-create'),
     path('<int:pk>/', ContentBlockUpdateView.as_view(), name='content-block-update'),
     path('batch-create/', ContentBlockBatchCreateView.as_view(), name='content-block-batch-create'),
+    path('batch-update/', ContentBlockBatchUpdateView.as_view(), name='content-block-batch-update'),
 ]

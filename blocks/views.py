@@ -94,3 +94,35 @@ class ContentBlockUpdateView(RetrieveUpdateAPIView):
 
         serializer = self.get_serializer(block)
         return Response(serializer.data)
+    
+class ContentBlockBatchCreateView(APIView):
+    def post(self, request):
+        section = request.data.get('section')
+        blocks_data = request.data.get('blocks', [])
+        created_blocks = []
+
+        for block_data in blocks_data:
+            block_type = block_data.get('block_type')
+            position = block_data.get('position')
+            is_published = block_data.get('is_published', True)
+
+            content_block = ContentBlock.objects.create(
+                section=section,
+                block_type=block_type,
+                position=position,
+                is_published=is_published
+            )
+
+            if block_type == 'title':
+                BlockTitle.objects.create(block=content_block, **block_data['title'])
+
+            elif block_type == 'text':
+                BlockText.objects.create(block=content_block, **block_data['text'])
+
+            elif block_type == 'image':
+                BlockImage.objects.create(block=content_block, **block_data['image'])
+
+            created_blocks.append(content_block)
+
+        serialized = ContentBlockSerializer(created_blocks, many=True)
+        return Response(serialized.data, status=status.HTTP_201_CREATED)

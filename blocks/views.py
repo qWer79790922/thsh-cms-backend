@@ -18,6 +18,9 @@ class ContentBlockListView(generics.ListAPIView):
         section = self.request.query_params.get('section')
         if section:
             queryset = queryset.filter(section=section)
+        preview = self.request.query_params.get('preview')
+        if preview != 'true': 
+            queryset = queryset.filter(is_published=True)
         return queryset
     
 class ContentBlockCreateView(APIView):
@@ -171,4 +174,42 @@ class ContentBlockBatchUpdateView(APIView):
             updated_blocks.append(block)
 
         serializer = ContentBlockSerializer(updated_blocks, many=True)
+        return Response(serializer.data)
+
+class ContentBlockPreviewView(APIView):
+    def post(self, request):
+        section = request.data.get('section')
+        blocks_data = request.data.get('blocks', [])
+        preview_result = []
+
+        for block_data in blocks_data:
+            block_type = block_data.get('block_type')
+            position = block_data.get('position', 0)
+            is_published = block_data.get('is_published', False)  # 一律預設為未發佈
+
+            # 模擬一筆 ContentBlock 資料（不寫入資料庫）
+            fake_block = ContentBlock(
+                id=None,  # 沒有真實 ID
+                section=section,
+                block_type=block_type,
+                position=position,
+                is_published=is_published
+            )
+
+            # 巢狀模擬內容
+            if block_type == 'title':
+                title_data = block_data.get('title', {})
+                fake_block.title = BlockTitle(**title_data)
+
+            elif block_type == 'text':
+                text_data = block_data.get('text', {})
+                fake_block.text = BlockText(**text_data)
+
+            elif block_type == 'image':
+                image_data = block_data.get('image', {})
+                fake_block.image = BlockImage(**image_data)
+
+            preview_result.append(fake_block)
+
+        serializer = ContentBlockSerializer(preview_result, many=True)
         return Response(serializer.data)

@@ -6,7 +6,7 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from .models import ContentBlock
 from .serializers import ContentBlockSerializer
 from .utils import create_nested_block, update_nested_block, build_fake_block
-
+from users.permissions import IsAdminUser
 
 class ContentBlockListView(generics.ListAPIView):
     queryset = ContentBlock.objects.filter(is_published=True).order_by('position')
@@ -24,6 +24,7 @@ class ContentBlockListView(generics.ListAPIView):
         return queryset
     
 class ContentBlockCreateView(APIView):
+    permission_classes = [IsAdminUser]
     def post(self, request, *args, **kwargs):
         block_type = request.data.get('block_type')
 
@@ -41,6 +42,7 @@ class ContentBlockCreateView(APIView):
 class ContentBlockUpdateView(RetrieveUpdateAPIView):
     queryset = ContentBlock.objects.all()
     serializer_class = ContentBlockSerializer
+    permission_classes = [IsAdminUser]
 
     def patch(self, request, *args, **kwargs):
         block = self.get_object()
@@ -56,10 +58,12 @@ class ContentBlockUpdateView(RetrieveUpdateAPIView):
         return Response(serializer.data)
     
 class ContentBlockBatchCreateView(APIView):
+    permission_classes = [IsAdminUser]
     def post(self, request):
         section = request.data.get('section')
         blocks_data = request.data.get('blocks', [])
         created_blocks = []
+        
 
         for block_data in blocks_data:
             block_type = block_data.get('block_type')
@@ -82,6 +86,7 @@ class ContentBlockBatchCreateView(APIView):
 from .utils import update_nested_block
 
 class ContentBlockBatchUpdateView(APIView):
+    permission_classes = [IsAdminUser]
     def patch(self, request):
         section = request.data.get('section')
         blocks_data = request.data.get('blocks', [])
@@ -108,6 +113,7 @@ class ContentBlockBatchUpdateView(APIView):
         return Response(serializer.data)
 
 class ContentBlockPreviewView(APIView):
+    permission_classes = [IsAdminUser]
     def post(self, request):
         section = request.data.get('section')
         blocks_data = request.data.get('blocks', [])
